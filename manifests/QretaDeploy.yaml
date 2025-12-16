@@ -1,0 +1,122 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: qretadeploy
+---
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: qretadeploy
+spec:
+  schema:
+    apiVersion: v1alpha1
+    kind: QretaDeploy
+    spec:
+      name: string
+      repoUrl: string
+      branch: string
+      folder: string | default="."
+      sshKeys: string | default=""
+      interval: string
+  resources:
+    - id: script
+      template:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: qretadeploy-sh
+        data:
+          deploy.sh: |
+            #!/bin/sh
+            set -e
+            WORKDIR="$HOME/repo"
+
+            # Ensure the work directory exists and has proper permissions
+            mkdir -p "$WORKDIR"
+
+            if [ ! -d "$WORKDIR/.git" ]; then
+              export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/tmp/known_hosts"
+              git clone --branch "$BRANCH" "$REPO_URL" "$WORKDIR"
+            fi
+
+            cd "$WORKDIR"
+            while true; do
+              echo "Applying changes..."
+              git fetch origin
+              git reset --hard "origin/$BRANCH"
+              kubectl apply -f $FOLDER
+              sleep "$INTERVAL"
+              echo "Changes applied successfully.\n"
+            done
+
+    - id: deployment
+      template:
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: ${ schema.spec.name  }
+          namespace: qretadeploy
+          annotations:
+            reloader.stakater.com/auto: "true"
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: ${ schema.spec.name  }
+          template:
+            metadata:
+              labels:
+                app: ${ schema.spec.name  }
+            spec:
+              serviceAccountName: ${ schema.spec.name }
+              containers:
+                - name: cd
+                  image: ghcr.io/qretaio/qretadeploy:latest
+                  command: ["/scripts/deploy.sh"]
+                  env:
+                    - name: BRANCH
+                      value: ${ schema.spec.branch }
+                    - name: REPO_URL
+                      value: ${ schema.spec.repoUrl }
+                    - name: INTERVAL
+                      value: ${ schema.spec.interval }
+                    - name: FOLDER
+                      value: ${ schema.spec.folder }
+                  volumeMounts:
+                    - name: script
+                      mountPath: /scripts
+                    - name: work
+                      mountPath: /work
+                    - name: ssh
+                      mountPath: /home/qreta/.ssh
+              volumes:
+                - name: script
+                  configMap:
+                    name: qretadeploy-sh
+                    defaultMode: 0755
+                - name: work
+                  emptyDir: {}
+                - name: ssh
+                  secret:
+                    secretName: ${ schema.spec.sshKeys }
+    - id: serviceAccount
+      template:
+        apiVersion: v1
+        kind: ServiceAccount
+        metadata:
+          name: ${ schema.spec.name }
+          namespace: qretadeploy
+    - id: clusterRoleBinding
+      template:
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: ClusterRoleBinding
+        metadata:
+          name: ${ schema.spec.name }
+        roleRef:
+          apiGroup: rbac.authorization.k8s.io
+          kind: ClusterRole
+          name: cluster-admin
+        subjects:
+          - kind: ServiceAccount
+            name: ${ schema.spec.name }
+            namespace: qretadeploy

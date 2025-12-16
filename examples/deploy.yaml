@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gh-deploy-key # set a secret name for the SSH key
+  namespace: qretadeploy # qretadeploy is the namespace for running QretaDeploy
+type: Opaque
+stringData:
+  id_ed25519: |
+    -----BEGIN OPENSSH PRIVATE KEY-----
+    ...
+    -----END OPENSSH PRIVATE KEY-----
+---
+apiVersion: kro.run/v1alpha1
+kind: QretaDeploy
+metadata:
+  name: qreta-gitops-deploy
+  namespace: qretadeploy
+spec:
+  name: qreta-gitops-deploy
+  repoUrl: git@github.com:qretaio/QretaDeploy.git
+  branch: main
+  interval: "30"
+  folder: manifests
+  sshKeys: gh-deploy-key # use the same secret name as the one created above
