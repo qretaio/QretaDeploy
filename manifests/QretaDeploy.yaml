@@ -69,7 +69,7 @@ spec:
               labels:
                 app: ${ schema.metadata.name  }
             spec:
-              serviceAccountName: ${ schema.metadata.name }
+              serviceAccountName: ${ serviceAccount.metadata.name }
               containers:
                 - name: cd
                   image: ghcr.io/qretaio/qretadeploy:latest

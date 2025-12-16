@@ -15,6 +15,8 @@ with Kro for minimal, declarative CD pipelines.
 1. **Install the QretaDeploy CRD:**
    ```bash
    kubectl apply -f manifests/QretaDeploy.yaml
+   # or 
+   kubectl apply -f https://raw.githubusercontent.com/qretaio/qretadeploy/main/manifests/QretaDeploy.yaml
    ```
 
 2. **Create a deployment secret** (for private repos):
