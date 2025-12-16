@@ -13,6 +13,8 @@ spec:
       folder: string | default="."
       sshKeys: string | default=""
       interval: string
+    status:
+      ready: ${deployment.status.readyReplicas == 1}
   resources:
     - id: script
       template:
