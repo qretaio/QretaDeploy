@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: gh-deploy-key # set a secret name for the SSH key
-  namespace: qretadeploy # qretadeploy is the namespace for running QretaDeploy
+  namespace: qretadeploy # namespace for running QretaDeploy
 type: Opaque
 stringData:
   id_ed25519: |
@@ -14,7 +14,7 @@ apiVersion: kro.run/v1alpha1
 kind: QretaDeploy
 metadata:
   name: qreta-gitops-deploy
-  namespace: qretadeploy
+  namespace: qretadeploy # the deployment will schedule on this namespace
 spec:
   name: qreta-gitops-deploy
   repoUrl: git@github.com:qretaio/QretaDeploy.git
