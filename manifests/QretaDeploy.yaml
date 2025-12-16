@@ -16,6 +16,13 @@ spec:
     status:
       ready: ${deployment.status.readyReplicas == 1}
   resources:
+    - id: sshKeys
+      externalRef:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: ${ schema.spec.sshKeys }
+          namespace: ${ schema.metadata.namespace }
     - id: script
       template:
         apiVersion: v1
