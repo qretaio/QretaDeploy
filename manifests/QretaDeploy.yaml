@@ -41,8 +41,10 @@ spec:
               git fetch origin
               git reset --hard "origin/$BRANCH"
               kubectl apply -f $FOLDER
+              echo "Changes applied successfully."
+              echo "Sleeping for $INTERVAL seconds..."
+              echo ""
               sleep "$INTERVAL"
-              echo "Changes applied successfully.\n"
             done
 
     - id: deployment
@@ -50,7 +52,7 @@ spec:
         apiVersion: apps/v1
         kind: Deployment
         metadata:
-          name: ${ schema.spec.name  }
+          name: ${ schema.metadata.name  }
           namespace: ${ schema.metadata.namespace }
           annotations:
             reloader.stakater.com/auto: "true"
@@ -58,13 +60,13 @@ spec:
           replicas: 1
           selector:
             matchLabels:
-              app: ${ schema.spec.name  }
+              app: ${ schema.metadata.name  }
           template:
             metadata:
               labels:
-                app: ${ schema.spec.name  }
+                app: ${ schema.metadata.name  }
             spec:
-              serviceAccountName: ${ schema.spec.name }
+              serviceAccountName: ${ schema.metadata.name }
               containers:
                 - name: cd
                   image: ghcr.io/qretaio/qretadeploy:latest
@@ -100,19 +102,19 @@ spec:
         apiVersion: v1
         kind: ServiceAccount
         metadata:
-          name: ${ schema.spec.name }
+          name: ${ schema.metadata.name }
           namespace: ${ schema.metadata.namespace }
     - id: clusterRoleBinding
       template:
         apiVersion: rbac.authorization.k8s.io/v1
         kind: ClusterRoleBinding
         metadata:
-          name: ${ schema.spec.name }
+          name: ${ schema.metadata.name }
         roleRef:
           apiGroup: rbac.authorization.k8s.io
           kind: ClusterRole
           name: cluster-admin
         subjects:
           - kind: ServiceAccount
-            name: ${ schema.spec.name }
+            name: ${ schema.metadata.name }
             namespace: ${ schema.metadata.namespace }

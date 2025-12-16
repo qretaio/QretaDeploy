@@ -16,7 +16,6 @@ metadata:
   name: qreta-gitops-deploy
   namespace: qretadeploy # the deployment will schedule on this namespace
 spec:
-  name: qreta-gitops-deploy
   repoUrl: git@github.com:qretaio/QretaDeploy.git
   branch: main
   interval: "30"
