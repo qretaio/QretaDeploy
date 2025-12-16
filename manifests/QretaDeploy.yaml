@@ -40,7 +40,8 @@ spec:
               echo "Applying changes..."
               git fetch origin
               git reset --hard "origin/$BRANCH"
-              kubectl apply -f $FOLDER
+              # recursively apply changes
+              kubectl apply -f $FOLDER -R
               echo "Changes applied successfully."
               echo "Sleeping for $INTERVAL seconds..."
               echo ""
