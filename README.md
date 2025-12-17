@@ -3,6 +3,10 @@
 Simple continuous deployment that syncs git repositories to Kubernetes. Built
 with Kro for minimal, declarative CD pipelines.
 
+## Dependencies
+
+- [Kro](https://kro.run) on the cluster
+
 ## What it does
 
 - Clones a git repository and continuously syncs it to your Kubernetes cluster
@@ -45,6 +49,8 @@ with Kro for minimal, declarative CD pipelines.
      sshKeys: gh-deploy-key     # Secret name (omit for public repos)
    EOF
    ```
+
+   See [examples](examples) for more details.
 
 ## Requirements
 
