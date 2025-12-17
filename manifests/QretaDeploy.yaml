@@ -45,13 +45,25 @@ spec:
             fi
 
             cd "$WORKDIR"
+            LAST_APPLIED_SHA=""
             while true; do
-              echo "Applying changes..."
+              echo "Checking for changes..."
               git fetch origin
-              git reset --hard "origin/$BRANCH"
-              # recursively apply changes
-              kubectl apply -f $FOLDER -R
-              echo "Changes applied successfully."
+              CURRENT_SHA=$(git rev-parse "origin/$BRANCH")
+
+              # Only apply changes if the commit SHA has changed
+              if [ "$CURRENT_SHA" != "$LAST_APPLIED_SHA" ]; then
+                echo "New commit detected: $CURRENT_SHA"
+                echo "Previous commit: $LAST_APPLIED_SHA"
+                git pull
+                # recursively apply changes
+                kubectl apply -f $FOLDER -R
+                # Update last applied SHA in memory
+                LAST_APPLIED_SHA="$CURRENT_SHA"
+                echo "Changes applied successfully."
+              else
+                echo "No changes detected (commit $CURRENT_SHA). Skipping apply."
+              fi
               echo "Sleeping for $INTERVAL seconds..."
               echo ""
               sleep "$INTERVAL"
