@@ -55,7 +55,14 @@ spec:
               if [ "$CURRENT_SHA" != "$LAST_APPLIED_SHA" ]; then
                 echo "New commit detected: $CURRENT_SHA"
                 echo "Previous commit: $LAST_APPLIED_SHA"
-                git pull
+                echo "Updating repository..."
+                if git pull; then
+                  echo "Repository updated successfully."
+                else
+                  echo "ERROR: Failed to update repository. History may have been rewritten."
+                  echo "Container will restart and perform a fresh clone."
+                  exit 1
+                fi
                 # recursively apply changes
                 kubectl apply -f $FOLDER -R
                 # Update last applied SHA in memory

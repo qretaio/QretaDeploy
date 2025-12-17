@@ -30,6 +30,13 @@ with Kro for minimal, declarative CD pipelines.
      --namespace=qretadeploy
    ```
 
+   For public repositories, you can create an empty secret:
+   ```bash
+   kubectl create secret generic empty-ssh-keys \
+     --from-literal=id_ed25519="" \
+     --namespace=qretadeploy
+   ```
+
 3. **Deploy your app:**
    ```bash
    kubectl apply -f examples/deploy.yaml
@@ -46,7 +53,7 @@ with Kro for minimal, declarative CD pipelines.
      branch: main
      folder: manifests          # Folder containing Kubernetes manifests
      interval: "30"             # Sync interval in seconds
-     sshKeys: gh-deploy-key     # Secret name (omit for public repos)
+     sshKeys: gh-deploy-key     # Secret name (required, use empty-ssh-keys for public repos)
    EOF
    ```
 
