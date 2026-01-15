@@ -19,5 +19,6 @@ spec:
   repoUrl: git@github.com:qretaio/QretaDeploy.git
   branch: main
   interval: "30"
-  folder: manifests
+  apply: manifests
+  delete: "" # Optional: specify a folder to delete resources before apply
   sshKeys: gh-deploy-key # use the same secret name as the one created above

@@ -10,7 +10,7 @@ with Kro for minimal, declarative CD pipelines.
 ## What it does
 
 - Clones a git repository and continuously syncs it to your Kubernetes cluster
-- Runs `kubectl apply` on a configurable schedule (default: 30 seconds)
+- Runs `kubectl delete` and `kubectl apply` on a configurable schedule
 - Handles SSH authentication for private repositories
 - Creates all necessary Kubernetes resources automatically
 
@@ -51,9 +51,10 @@ with Kro for minimal, declarative CD pipelines.
      name: my-app-cd
      repoUrl: git@github.com:your-org/your-repo.git
      branch: main
-     folder: manifests          # Folder containing Kubernetes manifests
-     interval: "30"             # Sync interval in seconds
-     sshKeys: gh-deploy-key     # Secret name (required, use empty-ssh-keys for public repos)
+     apply: manifests          # Folder containing Kubernetes manifests to apply
+     delete: old-manifests     # Optional: Folder containing manifests to delete before apply
+     interval: "30"            # Sync interval in seconds
+     sshKeys: gh-deploy-key    # Secret name (required, use empty-ssh-keys for public repos)
    EOF
    ```
 
@@ -71,8 +72,9 @@ QretaDeploy creates a lightweight deployment that:
 
 1. Clones your repository using SSH or HTTPS
 2. Runs in a loop, fetching the latest changes
-3. Applies Kubernetes manifests from the specified folder
-4. Restarts automatically when ConfigMaps change (via Reloader annotation)
+3. Deletes resources from the `delete` folder (if specified)
+4. Applies resources from the `apply` folder (if specified)
+5. Restarts automatically when ConfigMaps change (via Reloader annotation)
 
 ## License
 

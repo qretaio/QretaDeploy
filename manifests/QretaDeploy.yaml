@@ -10,7 +10,8 @@ spec:
       name: string
       repoUrl: string
       branch: string
-      folder: string | default="."
+      apply: string | default=""
+      delete: string | default=""
       sshKeys: string | default=""
       interval: string
     status:
@@ -63,8 +64,23 @@ spec:
                   echo "Container will restart and perform a fresh clone."
                   exit 1
                 fi
-                # recursively apply changes
-                kubectl apply -f $FOLDER -R
+
+                # Handle delete folder
+                if [ -n "$DELETE_FOLDER" ]; then
+                  echo "Deleting resources from $DELETE_FOLDER..."
+                  kubectl delete -f "$DELETE_FOLDER" -R || echo "Some resources may not exist, continuing..."
+                else
+                  echo "No delete folder specified, skipping delete."
+                fi
+
+                # Handle apply folder
+                if [ -n "$APPLY_FOLDER" ]; then
+                  echo "Applying resources from $APPLY_FOLDER..."
+                  kubectl apply -f "$APPLY_FOLDER" -R
+                else
+                  echo "No apply folder specified, skipping apply."
+                fi
+
                 # Update last applied SHA in memory
                 LAST_APPLIED_SHA="$CURRENT_SHA"
                 echo "Changes applied successfully."
@@ -107,8 +123,10 @@ spec:
                       value: ${ schema.spec.repoUrl }
                     - name: INTERVAL
                       value: ${ schema.spec.interval }
-                    - name: FOLDER
-                      value: ${ schema.spec.folder }
+                    - name: APPLY_FOLDER
+                      value: ${ schema.spec.apply }
+                    - name: DELETE_FOLDER
+                      value: ${ schema.spec.delete }
                   volumeMounts:
                     - name: script
                       mountPath: /scripts
