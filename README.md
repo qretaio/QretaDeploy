@@ -48,7 +48,6 @@ with Kro for minimal, declarative CD pipelines.
      name: my-app-cd
      namespace: qretadeploy
    spec:
-     name: my-app-cd
      repoUrl: git@github.com:your-org/your-repo.git
      branch: main
      apply: manifests          # Folder containing Kubernetes manifests to apply
